@@ -1,0 +1,68 @@
+# Default values for yolo5.
+
+# Replica count (number of pods to run)
+replicaCount: 2  # Increased to 2 for high availability, as Yolo5 is a critical application
+
+# Container image settings
+image:
+  repository: REPLACE_ECR_REPOSITORY  # Replace with the actual ECR repository URI for Polybot
+  pullPolicy: Always
+  tag: "REPLACE_LATEST_TAG"  # You may set a specific version or leave blank for using appVersion
+
+env:
+  AWS_DEFAULT_REGION: !!string "REPLACE_REGION"
+  SQS_QUEUE_IDENTIFY: !!string "REPLACE_IDENTIFY"
+  SQS_QUEUE_RESULTS: !!string "REPLACE_RESULTS"
+  BUCKET_NAME: !!string "REPLACE_BUCKET"
+  BUCKET_PREFIX: !!string "REPLACE_PREFIX"
+  TABLE_NAME: !!string "REPLACE_TABLE"
+
+# Image pull secrets (for private registry like ECR)
+imagePullSecrets:
+  - name: ecr-creds-secret  # Assuming ECR uses credentials stored in a Kubernetes secret
+
+# Overrides for chart name and full name
+nameOverride: ""
+fullnameOverride: ""
+
+# Service account settings
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: "yolo5-sa"
+
+# Pod annotations (used for monitoring, tracking, etc.)
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+
+# Pod labels for custom labeling
+podLabels:
+  app: "yolo5"
+
+# Pod security settings (no privileged access)
+podSecurityContext:
+  fsGroup: 2000
+
+securityContext:
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Resource requests and limits for the Yolo5 container
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# Autoscaling settings for dynamic workload management
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
