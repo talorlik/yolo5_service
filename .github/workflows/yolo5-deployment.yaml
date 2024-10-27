@@ -156,7 +156,7 @@ jobs:
           echo "aws_account=$(jq -r '.aws_account.value' ${{ github.workspace }}/${{ env.ARTIFACT_NAME }})" >> $GITHUB_OUTPUT
           echo "ecr_repository_url=$(jq -r '.ecr_repository_url.value' ${{ github.workspace }}/${{ env.ARTIFACT_NAME }})" >> $GITHUB_OUTPUT
 
-      - name: Extract outputs from Polybot file and set as environment variables
+      - name: Extract outputs from Aux Infra file and set as environment variables
         id: set_aux_infra_values
         env:
           ARTIFACT_NAME: "${{ steps.set_region.outputs.region_code }}-${{ inputs.environment }}-aux-infra-tf-outputs.json"
@@ -209,7 +209,12 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ needs.SetGlobals.outputs.region_code }}
       ECR_REPOSITORY_URL: ${{ needs.SetGlobals.outputs.ecr_repository_url }}
-      IMAGE_PLUS_TAG: "polybot-v2-${{ github.run_number }}"
+      IMAGE_PLUS_TAG: "yolo5-v2-${{ github.run_number }}"
+      SQS_QUEUE_IDENTIFY: ${{ needs.SetGlobals.outputs.sqs_queue_identify }}
+      SQS_QUEUE_RESULTS: ${{ needs.SetGlobals.outputs.sqs_queue_results }}
+      BUCKET_NAME: ${{ needs.SetGlobals.outputs.bucket_name }}
+      BUCKET_PREFIX: ${{ needs.SetGlobals.outputs.bucket_prefix }}
+      TABLE_NAME: ${{ needs.SetGlobals.outputs.table_name }}
     steps:
       - name: Checkout the repo code
         uses: actions/checkout@v2
@@ -219,14 +224,14 @@ jobs:
 
       - name: Update Helm Values
         run: |
-          sed -i "s/REPLACE_ECR_REPOSITORY/${{ env.ECR_REPOSITORY_URL }}/g" ${{ github.workspace }}/helm/polybot/values.yaml
-          sed -i "s/REPLACE_LATEST_TAG/${{ env.IMAGE_PLUS_TAG }}/g" ${{ github.workspace }}/helm/polybot/values.yaml
-          sed -i "s/REPLACE_REGION/${{ env.AWS_DEFAULT_REGION }}/g" ${{ github.workspace }}/helm/polybot/values.yaml
-          sed -i "s/REPLACE_IDENTIFY/${{ needs.SetGlobals.outputs.sqs_queue_identify }}/g" ${{ github.workspace }}/helm/polybot/values.yaml
-          sed -i "s/REPLACE_RESULTS/${{ needs.SetGlobals.outputs.sqs_queue_results }}/g" ${{ github.workspace }}/helm/polybot/values.yaml
-          sed -i "s/REPLACE_BUCKET/${{ needs.SetGlobals.outputs.bucket_name }}/g" ${{ github.workspace }}/helm/polybot/values.yaml
-          sed -i "s/REPLACE_PREFIX/${{ needs.SetGlobals.outputs.bucket_prefix }}/g" ${{ github.workspace }}/helm/polybot/values.yaml
-          sed -i "s/REPLACE_TABLE/${{ needs.SetGlobals.outputs.table_name }}/g" ${{ github.workspace }}/helm/polybot/values.yaml
+          sed -i "s/REPLACE_ECR_REPOSITORY/${{ env.ECR_REPOSITORY_URL }}/g" ${{ github.workspace }}/helm/yolo5/values.yaml
+          sed -i "s/REPLACE_LATEST_TAG/${{ env.IMAGE_PLUS_TAG }}/g" ${{ github.workspace }}/helm/yolo5/values.yaml
+          sed -i "s/REPLACE_REGION/${{ env.AWS_DEFAULT_REGION }}/g" ${{ github.workspace }}/helm/yolo5/values.yaml
+          sed -i "s/REPLACE_IDENTIFY/${{ env.SQS_QUEUE_IDENTIFY }}/g" ${{ github.workspace }}/helm/yolo5/values.yaml
+          sed -i "s/REPLACE_RESULTS/${{ env.SQS_QUEUE_RESULTS }}/g" ${{ github.workspace }}/helm/yolo5/values.yaml
+          sed -i "s/REPLACE_BUCKET/${{ env.BUCKET_NAME }}/g" ${{ github.workspace }}/helm/yolo5/values.yaml
+          sed -i "s/REPLACE_PREFIX/${{ env.BUCKET_PREFIX }}/g" ${{ github.workspace }}/helm/yolo5/values.yaml
+          sed -i "s/REPLACE_TABLE/${{ env.TABLE_NAME }}/g" ${{ github.workspace }}/helm/yolo5/values.yaml
 
       - name: Setup Git configuration
         run: |

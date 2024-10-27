@@ -5,7 +5,7 @@ replicaCount: 2  # Increased to 2 for high availability, as Yolo5 is a critical 
 
 # Container image settings
 image:
-  repository: REPLACE_ECR_REPOSITORY  # Replace with the actual ECR repository URI for Polybot
+  repository: REPLACE_ECR_REPOSITORY  # Replace with the actual ECR repository URI for yolo5
   pullPolicy: Always
   tag: "REPLACE_LATEST_TAG"  # You may set a specific version or leave blank for using appVersion
 
